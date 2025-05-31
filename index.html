@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume Extractor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .tag {
+            display: inline-block;
+            background-color: #e0f0ff;
+            color: #007bff;
+            padding: 5px 10px;
+            margin: 4px 4px 10px 0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .tag:hover {
+            background-color: #cde7ff;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Resume</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="resume" required>
+            <input type="submit" value="Extract Info">
+        </form>
+
+        {% if data.name %}
+        <div class="result">
+            <h2>Extracted Information</h2>
+            <p><strong>Name:</strong> {{ data.name }}</p>
+            <p><strong>Email:</strong> {{ data.email }}</p>
+            <p><strong>Phone:</strong> {{ data.phone }}</p>
+
+            <!-- Skill Tags -->
+            <p><strong>Skills:</strong></p>
+            <div id="skills">
+                {% for skill in data.skills %}
+                    <span class="tag" onclick="filterByTag('{{ skill }}')">{{ skill }}</span>
+                {% endfor %}
+                <span class="tag" style="background-color: #ffdddd; color: #d9534f;" onclick="resetFilter()">Reset</span>
+            </div>
+
+            {% if data.experience %}
+            <div class="section experience-section">
+                <h3>Experience</h3>
+                <p><em>Click a skill to filter experiences</em></p>
+                {% for exp in data.experience %}
+                <div class="experience-item" data-description="{{ exp.description | lower }}">
+                    <p><strong>Title:</strong> {{ exp.title }}</p>
+                    <p><strong>Company:</strong> {{ exp.company }}</p>
+                    {% if exp.location %}
+                    <p><strong>Location:</strong> {{ exp.location }}</p>
+                    {% endif %}
+                    <p><strong>Dates:</strong> {{ exp.dates }}</p>
+                    {% if exp.responsibilities %}
+                    <p><strong>Responsibilities:</strong></p>
+                    <ul>
+                        {% for bullet in exp.responsibilities %}
+                        <li>{{ bullet }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p><strong>Description:</strong> {{ exp.description }}</p>
+                    {% endif %}
+                    <hr>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No experience found.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- JavaScript for Tag Filtering -->
+    <script>
+        function filterByTag(tag) {
+            const items = document.querySelectorAll('.experience-item');
+            items.forEach(item => {
+                const desc = item.dataset.description || '';
+                if (desc.includes(tag.toLowerCase())) {
+                    item.classList.remove("hidden");
+                } else {
+                    item.classList.add("hidden");
+                }
+            });
+        }
+
+        function resetFilter() {
+            document.querySelectorAll('.experience-item').forEach(item => {
+                item.classList.remove("hidden");
+            });
+        }
+    </script>
+</body>
+</html>
